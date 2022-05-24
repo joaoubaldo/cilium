@@ -156,15 +156,24 @@ jobs:
           sudo cp docker/docker /usr/local/bin/docker
           rm -r docker docker-20.10.9.tgz
 
-      - uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+      # Checkout pull request branch. test.sh uses the local Helm chart in ./install/kubernetes.
+      - name: Checkout pull request for Helm chart
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
+        with:
+          ref: ${{ steps.vars.outputs.sha }}
+          persist-credentials: false
+
+      - name: Checkout upstream for Vagrantfile
+        uses: actions/checkout@2541b1294d2704b0964813337f33b291d3f8596b
         with:
           # This is intentionally set to stable branch to avoid using Vagrantfile from pull requests.
           ref: v1.11
           persist-credentials: false
+          path: upstream
 
       - name: Boot Fedora
         run: |
-          ln -sf ./test/l4lb/Vagrantfile ./Vagrantfile
+          ln -sf ./upstream/test/l4lb/Vagrantfile ./Vagrantfile
           # Retry if it fails (download.fedoraproject.org returns 404 sometimes)
           # Spend up to 10 seconds on this
           for i in {1..4}; do
