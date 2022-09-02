@@ -507,7 +507,6 @@ func NewClusterService(id ServiceID, k8sService *Service, k8sEndpoints *Endpoint
 	for ipString, backend := range k8sEndpoints.Backends {
 		svc.Backends[ipString] = backend.Ports
 	}
-	
 	svc.Shared = k8sService.Shared
 	svc.IncludeExternal = k8sService.IncludeExternal
 
