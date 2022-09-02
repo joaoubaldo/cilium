@@ -76,6 +76,13 @@ type ClusterService struct {
 
 	// Selector is the label selector used to select backends
 	Selector map[string]string `json:"selector"`
+
+	// IncludeExternal is true when external endpoints from other clusters
+	// should be included
+	IncludeExternal bool `json:"includeExternal"`
+
+	// Shared is true when the service should be exposed/shared to other clusters
+	Shared bool `json:"shared"`
 }
 
 func (s *ClusterService) String() string {

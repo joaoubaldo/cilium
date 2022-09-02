@@ -346,6 +346,10 @@ func (s *Service) DeepEqual(other *Service) bool {
 		return false
 	}
 
+	if s.Shared != other.Shared || s.IncludeExternal != other.IncludeExternal {
+		return false
+	}
+
 	if ((s.K8sExternalIPs != nil) && (other.K8sExternalIPs != nil)) || ((s.K8sExternalIPs == nil) != (other.K8sExternalIPs == nil)) {
 		in, other := s.K8sExternalIPs, other.K8sExternalIPs
 		if other == nil {
@@ -503,6 +507,9 @@ func NewClusterService(id ServiceID, k8sService *Service, k8sEndpoints *Endpoint
 	for ipString, backend := range k8sEndpoints.Backends {
 		svc.Backends[ipString] = backend.Ports
 	}
+	
+	svc.Shared = k8sService.Shared
+	svc.IncludeExternal = k8sService.IncludeExternal
 
 	return svc
 }
