@@ -371,7 +371,6 @@ func synchronizeIdentities() {
 	go identityInformer.Run(wait.NeverStop)
 }
 
-
 type nodeStub struct {
 	cluster string
 	name    string
