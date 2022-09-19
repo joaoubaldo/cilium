@@ -382,12 +382,13 @@ func (s *SharedStore) UpdateKeySync(ctx context.Context, key LocalKey, lease boo
 // DeleteLocalKey removes a key from being synchronized with the kvstore
 func (s *SharedStore) DeleteLocalKey(ctx context.Context, key NamedKey) {
 	name := key.GetKeyName()
-
+	log.Infof("JUMO node key: %v", name)
 	s.mutex.Lock()
 	_, ok := s.localKeys[name]
 	delete(s.localKeys, name)
 	s.mutex.Unlock()
 
+	log.Infof("JUMO about to delete from etcd: %v / %v", key, s.keyPath(key))
 	err := s.backend.Delete(ctx, s.keyPath(key))
 
 	if ok {
