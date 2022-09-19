@@ -402,7 +402,6 @@ func deleteNode(obj interface{}) {
 			cluster: cfg.clusterName,
 			name:    n.Name,
 		}
-		log.Infof("JUMO Deleting node from etcd: %v", n)
 		ciliumNodeStore.DeleteLocalKey(context.Background(), &n)
 	} else {
 		log.Warningf("Unknown CiliumNode object type %s received: %+v", reflect.TypeOf(obj), obj)
@@ -411,8 +410,7 @@ func deleteNode(obj interface{}) {
 
 func synchronizeNodes() {
 	_, ciliumNodeInformer := informer.NewInformer(
-		cache.NewListWatchFromClient(
-			ciliumK8sClient.CiliumV2().RESTClient(),
+		cache.NewListWatchFromClient(ciliumK8sClient.CiliumV2().RESTClient(),
 			"ciliumnodes", k8sv1.NamespaceAll, fields.Everything()),
 		&ciliumv2.CiliumNode{},
 		0,
