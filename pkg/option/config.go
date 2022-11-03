@@ -477,6 +477,14 @@ const (
 	// been reached.
 	DNSProxyConcurrencyProcessingGracePeriod = "dnsproxy-concurrency-processing-grace-period"
 
+	// DNSProxyLockCount is the array size containing mutexes which protect
+	// against parallel handling of DNS response IPs.
+	DNSProxyLockCount = "dnsproxy-lock-count"
+
+	// DNSProxyLockTimeout is timeout when acquiring the locks controlled by
+	// DNSProxyLockCount.
+	DNSProxyLockTimeout = "dnsproxy-lock-timeout"
+
 	// MTUName is the name of the MTU option
 	MTUName = "mtu"
 
@@ -1691,6 +1699,14 @@ type DaemonConfig struct {
 	// wait while processing DNS messages when the DNSProxyConcurrencyLimit has
 	// been reached.
 	DNSProxyConcurrencyProcessingGracePeriod time.Duration
+
+	// DNSProxyLockCount is the array size containing mutexes which protect
+	// against parallel handling of DNS response IPs.
+	DNSProxyLockCount int
+
+	// DNSProxyLockTimeout is timeout when acquiring the locks controlled by
+	// DNSProxyLockCount.
+	DNSProxyLockTimeout time.Duration
 
 	// EnableXTSocketFallback allows disabling of kernel's ip_early_demux
 	// sysctl option if `xt_socket` kernel module is not available.
@@ -3038,13 +3054,15 @@ func (c *DaemonConfig) Populate() {
 	default:
 		c.ToFQDNsMinTTL = defaults.ToFQDNsMinTTL
 	}
-	c.ToFQDNsProxyPort = viper.GetInt(ToFQDNsProxyPort)
-	c.ToFQDNsPreCache = viper.GetString(ToFQDNsPreCache)
-	c.ToFQDNsEnableDNSCompression = viper.GetBool(ToFQDNsEnableDNSCompression)
-	c.ToFQDNsIdleConnectionGracePeriod = viper.GetDuration(ToFQDNsIdleConnectionGracePeriod)
-	c.FQDNProxyResponseMaxDelay = viper.GetDuration(FQDNProxyResponseMaxDelay)
-	c.DNSProxyConcurrencyLimit = viper.GetInt(DNSProxyConcurrencyLimit)
-	c.DNSProxyConcurrencyProcessingGracePeriod = viper.GetDuration(DNSProxyConcurrencyProcessingGracePeriod)
+	c.ToFQDNsProxyPort = vp.GetInt(ToFQDNsProxyPort)
+	c.ToFQDNsPreCache = vp.GetString(ToFQDNsPreCache)
+	c.ToFQDNsEnableDNSCompression = vp.GetBool(ToFQDNsEnableDNSCompression)
+	c.ToFQDNsIdleConnectionGracePeriod = vp.GetDuration(ToFQDNsIdleConnectionGracePeriod)
+	c.FQDNProxyResponseMaxDelay = vp.GetDuration(FQDNProxyResponseMaxDelay)
+	c.DNSProxyConcurrencyLimit = vp.GetInt(DNSProxyConcurrencyLimit)
+	c.DNSProxyConcurrencyProcessingGracePeriod = vp.GetDuration(DNSProxyConcurrencyProcessingGracePeriod)
+	c.DNSProxyLockCount = vp.GetInt(DNSProxyLockCount)
+	c.DNSProxyLockTimeout = vp.GetDuration(DNSProxyLockTimeout)
 
 	// Convert IP strings into net.IPNet types
 	subnets, invalid := ip.ParseCIDRs(viper.GetStringSlice(IPv4PodSubnets))

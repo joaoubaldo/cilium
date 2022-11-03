@@ -631,4 +631,10 @@ const (
 
 	// IPSec old SPI
 	OldSPI = "oldSPI"
+
+	// CGroupId is the numerical cgroup id
+	CGroupID = "cgroupID"
+
+	// Expected is an expected value
+	Expected = "expected"
 )
