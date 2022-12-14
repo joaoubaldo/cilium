@@ -799,7 +799,7 @@ func (zombies *DNSZombieMappings) Upsert(expiryTime time.Time, ipStr string, qna
 // 2. The CG GC run did not mark the Zombie alive (lastCTGCUpdate > AliveAt)
 // otherwise the Zombie is alive.
 func (zombies *DNSZombieMappings) isConnectionAlive(zombie *DNSZombieMapping) bool {
-	log.Debugf("Zombies zombies.lastCTGCUpdate %v zombie.DeletePendingAt %v zombie.AliveAt %v", zombies.lastCTGCUpdate, zombie.DeletePendingAt, zombie.AliveAt)
+	log.Debugf("Zombies zombie %v(%v) zombies.lastCTGCUpdate %v zombie.DeletePendingAt %v zombie.AliveAt %v == %v, %v", zombie.IP, zombie.Names[0], zombies.lastCTGCUpdate, zombie.DeletePendingAt, zombie.AliveAt, zombies.lastCTGCUpdate.After(zombie.DeletePendingAt), zombies.lastCTGCUpdate.After(zombie.AliveAt))
 	return !(zombies.lastCTGCUpdate.After(zombie.DeletePendingAt) && zombies.lastCTGCUpdate.After(zombie.AliveAt))
 }
 
