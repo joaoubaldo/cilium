@@ -818,6 +818,16 @@ func (zombies *DNSZombieMappings) getAliveNames() map[string][]*DNSZombieMapping
 		}
 	}
 
+	for _, z := range zombies.deletes {
+		if !zombies.isConnectionAlive(z) {
+			for _, name := range z.Names {
+				if _, ok := aliveNames[name]; ok {
+					aliveNames[name] = append(aliveNames[name], z)
+				}
+			}
+		}
+	}
+
 	return aliveNames
 }
 
