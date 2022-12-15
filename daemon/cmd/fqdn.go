@@ -580,7 +580,8 @@ func (d *Daemon) notifyOnDNSMsg(lookupTime time.Time, ep *endpoint.Endpoint, epI
 			logfields.EndpointID:       ep.GetID(),
 			"qname":                    qname,
 			"newlyAllocatedIdentities": newlyAllocatedIdentities,
-		}).Debug("Adding newlyAllocatedIdentities")
+			"usedIdentities":           usedIdentities,
+		}).Debug("Calling UpsertGeneratedIdentities")
 		d.ipcache.UpsertGeneratedIdentities(newlyAllocatedIdentities, usedIdentities)
 
 		endMetric()
