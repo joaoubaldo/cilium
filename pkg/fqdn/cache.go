@@ -890,7 +890,6 @@ func (zombies *DNSZombieMappings) GC() (alive, dead []*DNSZombieMapping) {
 	// Collect zombies we can delete
 	for _, zombie := range zombies.deletes {
 		zombieAlive, overLimit := zombies.isZombieAlive(zombie, aliveNames)
-		log.Debugf("Zombies is alive %v(%v) == %v", zombie.IP, zombie.Names[0], zombieAlive)
 		if overLimit {
 			// No-op: This zombie is part of a name in 'aliveNames'
 			// that needs to impose a per-host IP limit. Decide
@@ -965,7 +964,6 @@ func (zombies *DNSZombieMappings) GC() (alive, dead []*DNSZombieMapping) {
 
 	// Delete the zombies we collected above from the internal map
 	for _, zombie := range dead {
-		log.Debugf("Zombies deleting dead zombie %v(%v)", zombie.IP.String(), zombie.Names[0])
 		delete(zombies.deletes, zombie.IP.String())
 	}
 
