@@ -619,6 +619,7 @@ func (p *DNSProxy) ServeDNS(w dns.ResponseWriter, request *dns.Msg) {
 		logfields.DNSName:      qname,
 		logfields.IPAddr:       epIPPort,
 		logfields.DNSRequestID: requestID,
+		"request":              request.String(),
 	})
 
 	var stat ProxyRequestContext
