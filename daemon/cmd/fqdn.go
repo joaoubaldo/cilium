@@ -542,57 +542,37 @@ func (d *Daemon) notifyOnDNSMsg(lookupTime time.Time, ep *endpoint.Endpoint, epI
 			"ips":   responseIPs,
 		}).Debug("Updating DNS name in cache from response to query")
 
+		updateCtx, updateCancel := context.WithTimeout(context.TODO(), option.Config.FQDNProxyResponseMaxDelay)
+		defer updateCancel()
 		updateStart := time.Now()
 
-		var wg *sync.WaitGroup
-		var usedIdentities []*identity.Identity
-		var newlyAllocatedIdentities map[string]*identity.Identity
-		retries := 5
-		for {
-			updateCtx, updateCancel := context.WithTimeout(context.TODO(), option.Config.FQDNProxyResponseMaxDelay)
-			defer updateCancel()
-			wg, usedIdentities, newlyAllocatedIdentities, err = d.dnsNameManager.UpdateGenerateDNS(updateCtx, lookupTime, map[string]*fqdn.DNSIPRecords{
-				qname: {
-					IPs: responseIPs,
-					TTL: int(TTL),
-				}})
-			if err != nil {
-				log.WithError(err).Error("error updating internal DNS cache for rule generation")
-			}
-			if len(usedIdentities) > 0 {
-				break
-			}
-			if retries > 0 {
-				log.WithFields(logrus.Fields{
-					logfields.Duration:         time.Since(updateStart),
-					logfields.EndpointID:       ep.GetID(),
-					"qname":                    qname,
-					"newlyAllocatedIdentities": newlyAllocatedIdentities,
-					"usedIdentities":           usedIdentities,
-				}).Debug("Retrying UpdateGenerateDNS")
-				retries--
-				continue
-			}
-			updateComplete := make(chan struct{})
-			go func(wg *sync.WaitGroup, done chan struct{}) {
-				wg.Wait()
-				close(updateComplete)
-			}(wg, updateComplete)
-
-			select {
-			case <-updateCtx.Done():
-				log.Error("Timed out waiting for datapath updates of FQDN IP information; returning response")
-				metrics.ProxyDatapathUpdateTimeout.Inc()
-			case <-updateComplete:
-			}
-
-			log.WithFields(logrus.Fields{
-				logfields.Duration:   time.Since(updateStart),
-				logfields.EndpointID: ep.GetID(),
-				"qname":              qname,
-			}).Debug("Waited for endpoints to regenerate due to a DNS response")
-			break
+		wg, usedIdentities, newlyAllocatedIdentities, err := d.dnsNameManager.UpdateGenerateDNS(updateCtx, lookupTime, map[string]*fqdn.DNSIPRecords{
+			qname: {
+				IPs: responseIPs,
+				TTL: int(TTL),
+			}})
+		if err != nil {
+			log.WithError(err).Error("error updating internal DNS cache for rule generation")
 		}
+
+		updateComplete := make(chan struct{})
+		go func(wg *sync.WaitGroup, done chan struct{}) {
+			wg.Wait()
+			close(updateComplete)
+		}(wg, updateComplete)
+
+		select {
+		case <-updateCtx.Done():
+			log.Error("Timed out waiting for datapath updates of FQDN IP information; returning response")
+			metrics.ProxyDatapathUpdateTimeout.Inc()
+		case <-updateComplete:
+		}
+
+		log.WithFields(logrus.Fields{
+			logfields.Duration:   time.Since(updateStart),
+			logfields.EndpointID: ep.GetID(),
+			"qname":              qname,
+		}).Debug("Waited for endpoints to regenerate due to a DNS response")
 
 		// Add new identities to the ipcache after the wait for the policy updates above
 		log.WithFields(logrus.Fields{
@@ -602,15 +582,6 @@ func (d *Daemon) notifyOnDNSMsg(lookupTime time.Time, ep *endpoint.Endpoint, epI
 			"newlyAllocatedIdentities": newlyAllocatedIdentities,
 			"usedIdentities":           usedIdentities,
 		}).Debug("Calling UpsertGeneratedIdentities")
-		if len(newlyAllocatedIdentities) == 0 && len(usedIdentities) == 0 {
-			log.WithFields(logrus.Fields{
-				logfields.Duration:         time.Since(updateStart),
-				logfields.EndpointID:       ep.GetID(),
-				"qname":                    qname,
-				"newlyAllocatedIdentities": newlyAllocatedIdentities,
-				"usedIdentities":           usedIdentities,
-			}).Error("Calling UpsertGeneratedIdentities with empty usedIdentities")
-		}
 		d.ipcache.UpsertGeneratedIdentities(newlyAllocatedIdentities, usedIdentities)
 
 		endMetric()
