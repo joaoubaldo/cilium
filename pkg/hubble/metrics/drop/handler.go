@@ -5,6 +5,7 @@ package drop
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -50,6 +51,6 @@ func (d *dropHandler) ProcessFlow(ctx context.Context, flow *flowpb.Flow) {
 
 	labels := []string{monitorAPI.DropReason(uint8(flow.GetDropReason())), v1.FlowProtocol(flow)}
 	labels = append(labels, d.context.GetLabelValues(flow)...)
-
+	fmt.Printf("Flow dropped for identity %v to %v", flow.Destination.Identity, flow.DestinationNames)
 	d.drops.WithLabelValues(labels...).Inc()
 }
