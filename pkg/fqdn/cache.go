@@ -802,9 +802,8 @@ func (zombies *DNSZombieMappings) isConnectionAlive(zombie *DNSZombieMapping) bo
 	return !(zombies.lastCTGCUpdate.After(zombie.DeletePendingAt) && zombies.lastCTGCUpdate.After(zombie.AliveAt))
 }
 
-// getAliveNames returns all the names that are alive.
-// A name is alive if at least one of the IPs that resolve to it is alive.
-// The value of the map contains all IPs for the name (both alive and dead).
+// getAliveNames returns all the names that are alive
+//   a name is alive if at least one of the IPs that resolve to it is alive
 func (zombies *DNSZombieMappings) getAliveNames() map[string][]*DNSZombieMapping {
 	aliveNames := make(map[string][]*DNSZombieMapping)
 
