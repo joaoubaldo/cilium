@@ -632,6 +632,9 @@ const (
 	// IPSec old SPI
 	OldSPI = "oldSPI"
 
+	// NumEntries is the number of entries counted
+	NumEntries = "entries"
+
 	// CGroupId is the numerical cgroup id
 	CGroupID = "cgroupID"
 
